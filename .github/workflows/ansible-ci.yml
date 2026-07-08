@@ -8,6 +8,8 @@ on:
   pull_request:
     branches:
       - main
+  paths:
+      - 'CI-Test/*.yml'
 
 jobs:
   ansible-validation:
