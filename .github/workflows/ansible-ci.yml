@@ -6,12 +6,14 @@ on:
       - main
       - develop
     paths:
-      - 'CI-Test/*.yml'
+      - '**/*.yml'
+      - '.github/workflows/ansible-ci.yml'
   pull_request:
     branches:
       - main
     paths:
-      - 'CI-Test/*.yml'
+      - '**/*.yml'
+      - '.github/workflows/ansible-ci.yml'
 
 jobs:
   ansible-validation:
