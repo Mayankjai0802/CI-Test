@@ -5,6 +5,8 @@ on:
     branches:
       - main
       - develop
+  paths:
+      - 'CI-Test/*.yml'    
   pull_request:
     branches:
       - main
