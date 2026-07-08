@@ -1,0 +1,40 @@
+name: Ansible CI
+
+on:
+  push:
+    branches:
+      - main
+      - develop
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  ansible-validation:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install Ansible
+        run: |
+          python -m pip install --upgrade pip
+          pip install ansible ansible-lint
+
+      - name: YAML Validation
+        run: |
+          python -c "import yaml; yaml.safe_load(open('docker-install.yml'))"
+
+      - name: Ansible Syntax Check
+        run: |
+          ansible-playbook --syntax-check docker-install.yml -i localhost,
+
+      - name: Ansible Lint
+        run: |
+          ansible-lint docker-install.yml
