@@ -1,6 +1,6 @@
 ---
 
-* name: Docker Installation Test
+* name: Docker Installation
   hosts: all
   become: true
 
