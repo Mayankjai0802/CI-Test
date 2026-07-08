@@ -5,12 +5,12 @@ on:
     branches:
       - main
       - develop
-  paths:
-      - 'CI-Test/*.yml'    
+    paths:
+      - 'CI-Test/*.yml'
   pull_request:
     branches:
       - main
-  paths:
+    paths:
       - 'CI-Test/*.yml'
 
 jobs:
