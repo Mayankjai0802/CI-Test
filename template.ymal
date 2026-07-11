@@ -66,8 +66,11 @@ Resources:
 
           def handler(event, context):
               bucket = event["ResourceProperties"]["BucketName"]
-              folders_str = event["ResourceProperties"]["Folders"]
-              folders = [f.strip() for f in folders_str.split(",") if f.strip()]
+              folders_val = event["ResourceProperties"]["Folders"]
+              if isinstance(folders_val, list):
+                  folders = [f.strip() for f in folders_val if f.strip()]
+              else:
+                  folders = [f.strip() for f in folders_val.split(",") if f.strip()]
 
               try:
                   if event["RequestType"] in ("Create", "Update"):
