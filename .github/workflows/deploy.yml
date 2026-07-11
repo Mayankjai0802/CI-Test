@@ -33,7 +33,7 @@ jobs:
             --template-file template.ymal \
             --stack-name ci-test-dev \
             --parameter-overrides \
-              BucketName=my-app-data \
+              BucketName=ci-test-s3 \
               Environment=dev \
               Subfolders=incoming,processed,archived,logs \
             --capabilities CAPABILITY_IAM
@@ -61,7 +61,7 @@ jobs:
             --template-file template.ymal \
             --stack-name ci-test-stage \
             --parameter-overrides \
-              BucketName=my-app-data \
+              BucketName=ci-test-s3 \
               Environment=stage \
               Subfolders=incoming,processed,archived,logs \
             --capabilities CAPABILITY_IAM
@@ -89,7 +89,7 @@ jobs:
             --template-file template.ymal \
             --stack-name ci-test-prod \
             --parameter-overrides \
-              BucketName=my-app-data \
+              BucketName=ci-test-s3 \
               Environment=prod \
               Subfolders=incoming,processed,archived,logs \
             --capabilities CAPABILITY_IAM
