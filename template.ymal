@@ -1,0 +1,117 @@
+AWSTemplateFormatVersion: "2010-09-09"
+
+Description: "S3 Bucket with subfolder structure"
+
+Parameters:
+  BucketName:
+    Type: String
+    Description: Name of the S3 bucket
+
+  Environment:
+    Type: String
+    AllowedValues: [dev, qa, stage, prod]
+
+  Subfolders:
+    Type: CommaDelimitedList
+    Description: "List of top-level subfolder names (e.g. logs,exports,archives)"
+    Default: "logs,exports"
+
+Resources:
+  S3Bucket:
+    Type: AWS::S3::Bucket
+    DeletionPolicy: Retain
+    Properties:
+      BucketName: !Sub "${BucketName}-${Environment}"
+      VersioningConfiguration:
+        Status: Enabled
+      PublicAccessBlockConfiguration:
+        BlockPublicAcls: true
+        BlockPublicPolicy: true
+        IgnorePublicAcls: true
+        RestrictPublicBuckets: true
+      BucketEncryption:
+        ServerSideEncryptionConfiguration:
+          - ServerSideEncryptionByDefault:
+              SSEAlgorithm: AES256
+      LifecycleConfiguration:
+        Rules:
+          - Id: ExpireOldVersions
+            Status: Enabled
+            NoncurrentVersionExpirationInDays: 90
+      Tags:
+        - Key: Environment
+          Value: !Ref Environment
+
+  CreateFolderStructure:
+    Type: Custom::S3FolderCreator
+    DependsOn: S3Bucket
+    Properties:
+      ServiceToken: !GetAtt FolderCreatorFunction.Arn
+      BucketName: !Ref S3Bucket
+      Folders: !Ref Subfolders
+
+  FolderCreatorFunction:
+    Type: AWS::Lambda::Function
+    Properties:
+      Handler: index.handler
+      Role: !GetAtt FolderCreatorRole.Arn
+      Runtime: python3.12
+      Timeout: 120
+      Code:
+        ZipFile: |
+          import boto3
+          import cfnresponse
+
+          s3 = boto3.client("s3")
+
+          def handler(event, context):
+              bucket = event["ResourceProperties"]["BucketName"]
+              folders_str = event["ResourceProperties"]["Folders"]
+              folders = [f.strip() for f in folders_str.split(",") if f.strip()]
+
+              try:
+                  if event["RequestType"] in ("Create", "Update"):
+                      for folder in folders:
+                          s3.put_object(Bucket=bucket, Key=f"{folder}/")
+                  elif event["RequestType"] == "Delete":
+                      for folder in folders:
+                          s3.delete_object(Bucket=bucket, Key=f"{folder}/")
+                  cfnresponse.send(event, context, cfnresponse.SUCCESS, {})
+              except Exception as e:
+                  cfnresponse.send(event, context, cfnresponse.FAILED, {"Error": str(e)})
+
+  FolderCreatorRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: lambda.amazonaws.com
+            Action: sts:AssumeRole
+
+            Policies:
+        - PolicyName: S3FolderAccess
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              - Effect: Allow
+                Action:
+                  - s3:PutObject
+                  - s3:DeleteObject
+                Resource: !Sub "arn:aws:s3:::${S3Bucket}/*"
+
+              - Effect: Allow
+                Action:
+                  - logs:CreateLogGroup
+                  - logs:CreateLogStream
+                  - logs:PutLogEvents
+                Resource: "*"
+
+Outputs:
+  BucketArn:
+    Value: !GetAtt S3Bucket.Arn
+
+  BucketName:
+    Value: !Ref S3Bucket

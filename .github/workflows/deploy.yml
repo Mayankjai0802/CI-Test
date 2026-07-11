@@ -1,0 +1,95 @@
+name: AWS CloudFormation Deploy
+
+on:
+  push:
+    branches: [main]
+
+permissions:
+  id-token: write
+  contents: read
+
+env:
+  AWS_REGION: us-east-1
+
+jobs:
+  deploy-dev:
+    name: Deploy to Dev
+    runs-on: ubuntu-latest
+    environment: dev
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Deploy CloudFormation Stack (Dev)
+        run: |
+          aws cloudformation deploy \
+            --template-file template.ymal \
+            --stack-name ci-test-dev \
+            --parameter-overrides \
+              BucketName=my-app-data \
+              Environment=dev \
+              Subfolders=incoming,processed,archived,logs \
+            --capabilities CAPABILITY_IAM
+
+  deploy-stage:
+    name: Deploy to Stage
+    runs-on: ubuntu-latest
+    environment: stage
+    if: false  # Enable when ready for stage deployments
+    needs: deploy-dev
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Deploy CloudFormation Stack (Stage)
+        run: |
+          aws cloudformation deploy \
+            --template-file template.ymal \
+            --stack-name ci-test-stage \
+            --parameter-overrides \
+              BucketName=my-app-data \
+              Environment=stage \
+              Subfolders=incoming,processed,archived,logs \
+            --capabilities CAPABILITY_IAM
+
+  deploy-prod:
+    name: Deploy to Prod
+    runs-on: ubuntu-latest
+    environment: production
+    if: false  # Enable when ready for prod deployments
+    needs: deploy-stage
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Deploy CloudFormation Stack (Prod)
+        run: |
+          aws cloudformation deploy \
+            --template-file template.ymal \
+            --stack-name ci-test-prod \
+            --parameter-overrides \
+              BucketName=my-app-data \
+              Environment=prod \
+              Subfolders=incoming,processed,archived,logs \
+            --capabilities CAPABILITY_IAM

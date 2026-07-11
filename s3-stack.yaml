@@ -1,0 +1,18 @@
+AWSTemplateFormatVersion: "2010-09-09"
+
+Description: "Example usage of the S3 module as a nested stack"
+
+Parameters:
+  Environment:
+    Type: String
+    AllowedValues: [dev, qa, stage, prod]
+
+Resources:
+  S3BucketStack:
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL: "https://s3-bucket-region.s3.amazonaws.com/templates/template.yaml"
+      Parameters:
+        BucketName: "my-app-data"
+        Environment: !Ref Environment
+        Subfolders: "incoming,processed,archived,logs"
