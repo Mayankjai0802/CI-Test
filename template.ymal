@@ -90,8 +90,7 @@ Resources:
             Principal:
               Service: lambda.amazonaws.com
             Action: sts:AssumeRole
-
-            Policies:
+      Policies:
         - PolicyName: S3FolderAccess
           PolicyDocument:
             Version: "2012-10-17"
@@ -101,7 +100,6 @@ Resources:
                   - s3:PutObject
                   - s3:DeleteObject
                 Resource: !Sub "arn:aws:s3:::${S3Bucket}/*"
-
               - Effect: Allow
                 Action:
                   - logs:CreateLogGroup
