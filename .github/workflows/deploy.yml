@@ -30,7 +30,7 @@ jobs:
       - name: Deploy CloudFormation Stack (Dev)
         run: |
           aws cloudformation deploy \
-            --template-file template.ymal \
+            --template-file template.yaml \
             --stack-name ci-test-dev \
             --parameter-overrides \
               BucketName=ci-test-s3 \
@@ -58,7 +58,7 @@ jobs:
       - name: Deploy CloudFormation Stack (Stage)
         run: |
           aws cloudformation deploy \
-            --template-file template.ymal \
+            --template-file template.yaml \
             --stack-name ci-test-stage \
             --parameter-overrides \
               BucketName=ci-test-s3 \
@@ -86,7 +86,7 @@ jobs:
       - name: Deploy CloudFormation Stack (Prod)
         run: |
           aws cloudformation deploy \
-            --template-file template.ymal \
+            --template-file template.yaml \
             --stack-name ci-test-prod \
             --parameter-overrides \
               BucketName=ci-test-s3 \
